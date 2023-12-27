@@ -1,27 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:meals/models/meal.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals/providers/favorites_provider.dart';
 
-class MealDetailsScreen extends StatelessWidget {
+class MealDetailsScreen extends ConsumerWidget {
   const MealDetailsScreen({
     super.key,
     required this.meal,
-    required this.onToggleFavorite,
   });
 
   final Meal meal;
-  final void Function(Meal meal) onToggleFavorite;
 
+  void _toggleFavoriteStatus(BuildContext context, WidgetRef ref, Meal meal) {
+    // Don't use watch() here, because we don't want to rebuild the
+    // entire screen when the favoriteMealsProvider changes.
+
+    // Instead, we use ref.read() to get the Notifier class from the
+    // provider, and then call the toggleFavorite() method on it.
+    final hasBeenAdded =
+        ref.read(favoriteMealsProvider.notifier).toggleMealFavoriteStatus(meal);
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          hasBeenAdded
+              ? 'Added to Favorites: ${meal.title}'
+              : 'Removed from Favorites: ${meal.title}',
+        ),
+      ),
+    );
+  }
+
+// We have to adjust the build method to use the ConsumerWidget
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favoriteMeals = ref.watch(favoriteMealsProvider);
+
+    final isFavorite = favoriteMeals.contains(meal);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(meal.title),
         actions: [
           IconButton(
             onPressed: () {
-              onToggleFavorite(meal);
+              _toggleFavoriteStatus(context, ref, meal);
             },
-            icon: const Icon(Icons.star),
+            icon: Icon(isFavorite ? Icons.star : Icons.star_border),
             tooltip: 'Add to Favorites',
           )
         ],
