@@ -47,7 +47,18 @@ class MealDetailsScreen extends ConsumerWidget {
             onPressed: () {
               _toggleFavoriteStatus(context, ref, meal);
             },
-            icon: Icon(isFavorite ? Icons.star : Icons.star_border),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => RotationTransition(
+                // turns: animation, // This is too fast
+                turns: Tween<double>(begin: 0.8, end: 1).animate(animation),
+                child: child,
+              ),
+              child: Icon(
+                isFavorite ? Icons.star : Icons.star_border,
+                key: ValueKey(isFavorite),
+              ),
+            ),
             tooltip: 'Add to Favorites',
           )
         ],
@@ -55,38 +66,52 @@ class MealDetailsScreen extends ConsumerWidget {
       // Either ListView or wrap a Column with SingleChildScrollView
       body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              meal.imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 300,
+            Hero(
+              tag: meal.id,
+              child: Image.network(
+                meal.imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 300,
+              ),
             ),
             const SizedBox(height: 14),
-            Text(
-              'Ingredients',
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 14),
-            for (final ingredient in meal.ingredients)
-              Text(
-                ingredient,
-                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                      color: Theme.of(context).colorScheme.onBackground,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Ingredients',
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
-            const SizedBox(height: 14),
-            Text(
-              'Steps',
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
+            for (final ingredient in meal.ingredients)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Text(
+                  ingredient,
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                        color: Theme.of(context).colorScheme.onBackground,
+                      ),
+                ),
+              ),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'Steps',
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 4),
             for (final step in meal.steps)
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -95,7 +120,7 @@ class MealDetailsScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   step,
-                  textAlign: TextAlign.center,
+                  // textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                         color: Theme.of(context).colorScheme.onBackground,
                       ),
